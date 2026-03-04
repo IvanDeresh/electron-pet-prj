@@ -1,31 +1,62 @@
+import { Button, Checkbox, Form, Input, Listbox, ListboxItem } from "@heroui/react";
+import { useDispatch, useSelector } from "react-redux";
+import { addNew, AppDispatch, deleteOne, getTodos, markAsDone } from "./store/store";
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/electron-vite.animate.svg";
-import "./App.css";
-import { Button } from "@heroui/react";
 
 function App() {
-    const [count, setCount] = useState(0);
+    const todos = useSelector(getTodos);
+    const dispatch = useDispatch<AppDispatch>();
+    const [currentTodo, setCurrentTodo] = useState("");
+
+    function submit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        dispatch(addNew({ title: currentTodo, isDone: false }));
+        setCurrentTodo("");
+    }
+
+    console.log(todos);
 
     return (
-        <>
-            <div>
-                <a href="https://electron-vite.github.io" target="_blank">
-                    <img src={viteLogo} className="logo" alt="Vite logo" />
-                </a>
-                <a href="https://react.dev" target="_blank">
-                    <img src={reactLogo} className="logo react" alt="React logo" />
-                </a>
+        <div className="flex w-full h-screen justify-center items-center">
+            <div className="flex max-w-100 flex-col">
+                <Form className="flex flex-row" onSubmit={submit}>
+                    <Input value={currentTodo} onValueChange={setCurrentTodo} />
+                    <Button type="submit">Add</Button>
+                </Form>
+                <Listbox items={todos}>
+                    {(item) => {
+                        return (
+                            <ListboxItem
+                                // classNames={{
+                                //     title: "flex w-full",
+                                // }}
+                                key={item.id}
+                            >
+                                <div className="flex w-full justify-between">
+                                    <Checkbox
+                                        isSelected={item.isDone}
+                                        onValueChange={(isSelected) =>
+                                            dispatch(
+                                                markAsDone({ id: item.id, isDone: isSelected }),
+                                            )
+                                        }
+                                    />
+                                    <div>{item.title}</div>
+                                    <div>
+                                        <Button
+                                            className="min-w-4 min-h-4 w-4 h-4"
+                                            onPress={() => dispatch(deleteOne(item.id))}
+                                        >
+                                            X
+                                        </Button>
+                                    </div>
+                                </div>
+                            </ListboxItem>
+                        );
+                    }}
+                </Listbox>
             </div>
-            <h1>Vite + React</h1>
-            <div className="card">
-                <Button onPress={() => setCount((count) => count + 1)}>count is {count}</Button>
-                <p>
-                    Edit <code>src/App.tsx</code> and save to test HMR
-                </p>
-            </div>
-            <p className="read-the-docs">Click on the Vite and React logos to learn more</p>
-        </>
+        </div>
     );
 }
 
